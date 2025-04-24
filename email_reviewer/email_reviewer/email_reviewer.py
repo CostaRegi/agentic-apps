@@ -53,6 +53,10 @@ class EmailReview(StopEvent):
         None,
         description='The corrected version of the email, if changes were necessary',
     )
+    review_result: str = Field(
+        default='',
+        description='A description containing the email changes'
+    )
 
 
 EMAIL_REVIEWER_PROMPT_TEMPLATE = RichPromptTemplate(
@@ -66,6 +70,9 @@ Your tasks are:
 1) Check whether the provided email has no writing errors
 2) Check whether the provided email matches the target audience
 3) If the email has writing errors or does not match the target audience below, correct the email.
+4) If the email was corrected set the applied corrections in review_result,
+For eg: Sentence A was modified to sentence B. Otherwise set the value of
+review_result as No corrections needed.
 
 The target audience:
 {{ target_audience }}
@@ -94,7 +101,7 @@ class EmailReviewer(Workflow):
         super().__init__(verbose=verbose, **workflow_kwargs)
 
         # Can use Azure OpenAI or OpenAI based on the environment variables
-        if os.getenv("AZURE_OPENAI_ENDPOINT")
+        if os.getenv("AZURE_OPENAI_ENDPOINT"):
             self.llm = llm or AzureOpenAI(
                 model=os.getenv("AZURE_OPENAI_MODEL", "gpt-4o-mini"),
                 deployment_name=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME", "gpt-4o-mini"),
